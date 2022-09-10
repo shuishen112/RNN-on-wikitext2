@@ -173,13 +173,14 @@ if __name__ == "__main__":
     test = Vocab(word_freqs, test_corpus, 31)
 
     # Train LSTM
+    vocab_size = len(word_freqs)
     lstm_data_module = TextDateModule(train, valid, test)
     lstm_model = TextLSTMModule(vocab_size)
 
     tb_logger = pl_loggers.TensorBoardLogger("./lightning_logs/", name="LSTM")
     # Define your gpu here
     trainer = pl.Trainer(logger=tb_logger, gradient_clip_val=0.5, max_epochs=20, gpus=1)
-    trainer.fit(lstm_model, data_module)
+    trainer.fit(lstm_model, lstm_data_module)
 
-    result = trainer.test(lstm_model, data_module)
+    result = trainer.test(lstm_model, lstm_data_module)
     print(result)
