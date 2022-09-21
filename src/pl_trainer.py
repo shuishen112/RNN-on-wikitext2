@@ -84,7 +84,7 @@ if __name__ == "__main__":
         # limit_train_batches=10,
         callbacks=checkpoint_callback,
         # resume_from_checkpoint="output/RNN/sample-epoch=30-loss_valid=4.72.ckpt",
-        gradient_clip_val=0.25,
+        # gradient_clip_val=0.25,
     )
     trainer.fit(
         model,

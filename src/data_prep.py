@@ -7,11 +7,11 @@ class Prep:
     """Preparing tokenization and frequences."""
 
     def __init__(self):
-        with open("data/wiki.test.txt") as f:
+        with open("data/ptb.test.txt") as f:
             self.test = f.read()
-        with open("data/wiki.train.txt") as f:
+        with open("data/ptb.train.txt") as f:
             self.train = f.read()
-        with open("data/wiki.valid.txt") as f:
+        with open("data/ptb.valid.txt") as f:
             self.valid = f.read()
         # self.test1 = "After release , it received downloadable content . along with an expanded edition in November of that year ."
         # self.test2 = "After it received ."
