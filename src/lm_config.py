@@ -72,7 +72,7 @@ parser.add_argument(
 
 parser.add_argument(
     "--cell",
-    default="TinyTNLM",
+    default="Second",
     help=" cell name: Second, TinyTNLM, RNN, MRNN, MIRNN,RACs",
 )
 

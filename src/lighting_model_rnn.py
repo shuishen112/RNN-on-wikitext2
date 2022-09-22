@@ -69,6 +69,22 @@ class MIRNNCell(jit.ScriptModule):
         return hy
 
 
+class SecondOrderCell(jit.ScriptModule):
+    def __init__(self, input_size, hidden_size):
+        super(SecondOrderCell, self).__init__()
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.three_order = nn.Bilinear(
+            self.input_size, self.hidden_size, self.hidden_size
+        )
+
+    @jit.script_method
+    def forward(self, input: Tensor, state: Tensor):
+        hidden = self.three_order(state, input)
+        hy = torch.relu(hidden)
+        return hy
+
+
 class TensorRNNCell(jit.ScriptModule):
     """Tensor RNN cell
 
@@ -176,9 +192,9 @@ class RNNCell(jit.ScriptModule):
         return hy
 
 
-class RNNLayer(jit.ScriptModule):
+class TensorNetworkLayer(jit.ScriptModule):
     def __init__(self, cell, *cell_args):
-        super(RNNLayer, self).__init__()
+        super(TensorNetworkLayer, self).__init__()
         self.cell = cell(*cell_args)
 
     @jit.script_method
@@ -211,13 +227,15 @@ class TextLightningModule(pl.LightningModule):
         # layers
         print("cell name", self.cell)
         if self.cell == "MIRNN":
-            self.rnn = RNNLayer(MIRNNCell, embedding_size, hidden_size)
+            self.rnn = TensorNetworkLayer(MIRNNCell, embedding_size, hidden_size)
         elif self.cell == "MRNN":
-            self.rnn = RNNLayer(MRNNCell, embedding_size, hidden_size)
+            self.rnn = TensorNetworkLayer(MRNNCell, embedding_size, hidden_size)
         elif self.cell == "RNN":
-            self.rnn = RNNLayer(RNNCell, embedding_size, hidden_size)
+            self.rnn = TensorNetworkLayer(RNNCell, embedding_size, hidden_size)
         elif self.cell == "TensorRNN":
-            self.rnn = RNNLayer(TensorRNNCell, embedding_size, hidden_size)
+            self.rnn = TensorNetworkLayer(TensorRNNCell, embedding_size, hidden_size)
+        elif self.cell == "Second":
+            self.rnn = TensorNetworkLayer(SecondOrderCell, embedding_size, hidden_size)
         else:
             print("there is no cell")
 

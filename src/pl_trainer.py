@@ -45,22 +45,22 @@ if __name__ == "__main__":
     vocab_size = len(word_freqs)
     data_module = TextDateModule(train, valid, test, batch_size=20)
 
-    # model = TextLightningModule(
-    #     vocab_size,
-    #     hidden_size=100,
-    #     embedding_size=100,
-    #     dropout=0.25,
-    #     lr=5e-1,
-    #     cell=cell,
-    # )
-
-    model = TensorLightningModule(
-        vocab_size=vocab_size,
-        rank=args.rank,
-        dropout=args.dropout,
-        lr=args.lr,
+    model = TextLightningModule(
+        vocab_size,
+        hidden_size=100,
+        embedding_size=100,
+        dropout=0.25,
+        lr=5e-1,
         cell=args.cell,
     )
+
+    # model = TensorLightningModule(
+    #     vocab_size=vocab_size,
+    #     rank=args.rank,
+    #     dropout=args.dropout,
+    #     lr=args.lr,
+    #     cell=args.cell,
+    # )
 
     # model = model.load_from_checkpoint(
     #     "lightning_logs/tnlm/version_1/checkpoints/epoch=49-step=78950.ckpt"
