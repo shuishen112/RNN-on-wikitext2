@@ -31,7 +31,7 @@ class TensorLayer(jit.ScriptModule):
         return torch.stack(outputs, 1), state
 
 
-class TNLMCell(jit.ScriptModule):
+class TinyTNLMCell(jit.ScriptModule):
     """tnlm cell
 
     Args:
@@ -39,7 +39,7 @@ class TNLMCell(jit.ScriptModule):
     """
 
     def __init__(self, rank):
-        super(TNLMCell, self).__init__()
+        super(TinyTNLMCell, self).__init__()
         self.rank = rank
         self.wih = nn.Linear(self.rank, self.rank)
         self.whh = nn.Linear(self.rank * self.rank, self.rank * self.rank)
@@ -59,9 +59,9 @@ class TNLMCell(jit.ScriptModule):
         return hidden.squeeze(1)
 
 
-class TensorCell(jit.ScriptModule):
+class SecondOrderCell(jit.ScriptModule):
     def __init__(self, rank):
-        super(TensorCell, self).__init__()
+        super(SecondOrderCell, self).__init__()
         self.rank = rank
         self.three_order = nn.Bilinear(self.rank, self.rank * self.rank, self.rank)
 
@@ -77,10 +77,8 @@ class TensorLightningModule(pl.LightningModule):
 
     def __init__(self, vocab_size, rank, dropout, lr, cell):
         super().__init__()
-        # self.rank = 10
+
         self.vocab_size = vocab_size
-        # self.dropout = 0.25
-        # self.lr = 5e-1
 
         self.rank = rank
         self.dropout = dropout
@@ -90,12 +88,12 @@ class TensorLightningModule(pl.LightningModule):
         self.embedding = nn.Embedding(self.vocab_size, self.rank * self.rank)
         nn.init.uniform_(self.embedding.weight, -0.1, 0.1)
 
-        if cell == "tensor":
+        if cell == "Second":
             print("cell_name", cell)
-            self.tnn = TensorLayer(TensorCell, self.rank)
-        elif cell == "tnlm":
+            self.tnn = TensorLayer(SecondOrderCell, self.rank)
+        elif cell == "TinyTNLM":
             print("cell_name", cell)
-            self.tnn = TensorLayer(TNLMCell, self.rank)
+            self.tnn = TensorLayer(TinyTNLMCell, self.rank)
 
         self.out_embed = nn.Linear(self.rank, self.rank * self.rank)
         self.out_fc = nn.Linear(self.rank * self.rank, vocab_size)

@@ -10,6 +10,7 @@ import random
 import numpy as np
 from lighting_model_rnn import TextLightningModule, TextDateModule
 from lighting_model_tensor import TensorLightningModule
+from lm_config import args
 
 
 def set_seed():
@@ -44,7 +45,6 @@ if __name__ == "__main__":
     vocab_size = len(word_freqs)
     data_module = TextDateModule(train, valid, test, batch_size=20)
 
-    cell = "tnlm"
     # model = TextLightningModule(
     #     vocab_size,
     #     hidden_size=100,
@@ -56,23 +56,27 @@ if __name__ == "__main__":
 
     model = TensorLightningModule(
         vocab_size=vocab_size,
-        rank=10,
-        dropout=0.25,
-        lr=5e-1,
-        cell=cell,
+        rank=args.rank,
+        dropout=args.dropout,
+        lr=args.lr,
+        cell=args.cell,
     )
 
     # model = model.load_from_checkpoint(
     #     "lightning_logs/tnlm/version_1/checkpoints/epoch=49-step=78950.ckpt"
     # )
 
-    tb_logger = pl_loggers.TensorBoardLogger("./lightning_logs/", name=cell)
-    wandb_logger = WandbLogger(project="ICLR-word-lm", name=cell + "_wiki")
+    tb_logger = pl_loggers.TensorBoardLogger(
+        "./lightning_logs/", name=f"{args.cell}_{args.data_name}"
+    )
+    wandb_logger = WandbLogger(
+        project="ICLR-word-lm", name=f"{args.cell}_{args.data_name}"
+    )
     # Define your gpu here
 
     checkpoint_callback = ModelCheckpoint(
         monitor="loss_valid",
-        dirpath=f"output/{cell}_wiki",
+        dirpath=f"output/{args.cell}_{args.data_name}",
         save_top_k=2,
         filename="sample-{epoch:02d}-{loss_valid:.2f}",
         mode="min",
