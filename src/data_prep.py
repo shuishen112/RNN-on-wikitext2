@@ -1,17 +1,17 @@
 from nltk.tokenize import word_tokenize, sent_tokenize
 import random
 from tqdm import tqdm
-
+from lm_config import args
 
 class Prep:
     """Preparing tokenization and frequences."""
 
     def __init__(self):
-        with open("data/ptb.test.txt") as f:
+        with open(f"data/{args.data_name}.test.txt") as f:
             self.test = f.read()
-        with open("data/ptb.train.txt") as f:
+        with open(f"data/{args.data_name}.train.txt") as f:
             self.train = f.read()
-        with open("data/ptb.valid.txt") as f:
+        with open(f"data/{args.data_name}.valid.txt") as f:
             self.valid = f.read()
         # self.test1 = "After release , it received downloadable content . along with an expanded edition in November of that year ."
         # self.test2 = "After it received ."
