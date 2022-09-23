@@ -45,22 +45,24 @@ if __name__ == "__main__":
     vocab_size = len(word_freqs)
     data_module = TextDateModule(train, valid, test, batch_size=20)
 
-    model = TextLightningModule(
-        vocab_size,
-        hidden_size=100,
-        embedding_size=100,
-        dropout=0.25,
-        lr=5e-1,
-        cell=args.cell,
-    )
+    if args.cell in ["RNN", "MRNN", "MIRNN", "Second", "RACs"]:
 
-    # model = TensorLightningModule(
-    #     vocab_size=vocab_size,
-    #     rank=args.rank,
-    #     dropout=args.dropout,
-    #     lr=args.lr,
-    #     cell=args.cell,
-    # )
+        model = TextLightningModule(
+            vocab_size,
+            hidden_size=100,
+            embedding_size=100,
+            dropout=0.25,
+            lr=5e-1,
+            cell=args.cell,
+        )
+    elif args.cell in ["TinyTNLM"]:
+        model = TensorLightningModule(
+            vocab_size=vocab_size,
+            rank=args.rank,
+            dropout=args.dropout,
+            lr=args.lr,
+            cell=args.cell,
+        )
 
     # model = model.load_from_checkpoint(
     #     "lightning_logs/tnlm/version_1/checkpoints/epoch=49-step=78950.ckpt"
@@ -77,7 +79,7 @@ if __name__ == "__main__":
     checkpoint_callback = ModelCheckpoint(
         monitor="loss_valid",
         dirpath=f"output/{args.cell}_{args.data_name}",
-        save_top_k=2,
+        save_top_k=1,
         filename="sample-{epoch:02d}-{loss_valid:.2f}",
         mode="min",
     )
@@ -88,7 +90,7 @@ if __name__ == "__main__":
         # limit_train_batches=10,
         callbacks=checkpoint_callback,
         # resume_from_checkpoint="output/RNN/sample-epoch=30-loss_valid=4.72.ckpt",
-        # gradient_clip_val=0.25,
+        gradient_clip_val=args.clip,
     )
     trainer.fit(
         model,

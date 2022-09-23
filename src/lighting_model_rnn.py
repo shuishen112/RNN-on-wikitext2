@@ -69,6 +69,38 @@ class MIRNNCell(jit.ScriptModule):
         return hy
 
 
+class RACs(jit.ScriptModule):
+    """RACs cell
+
+    Args:
+        jit (_type_): _description_
+    """
+
+    def __init__(self, input_size, hidden_size):
+        super(RACs, self).__init__()
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.weight_ih = Parameter(torch.randn(hidden_size, input_size))
+        self.weight_hh = Parameter(torch.randn(hidden_size, hidden_size))
+        self.bias_ih = Parameter(torch.randn(hidden_size))
+        self.bias_hh = Parameter(torch.randn(hidden_size))
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        stdv = 1.0 / math.sqrt(self.hidden_size)
+        for weight in self.parameters():
+            weight.data.uniform_(-stdv, stdv)
+
+    @jit.script_method
+    def forward(self, input: Tensor, state: Tensor):
+        hx = state
+        hidden = (torch.mm(input, self.weight_ih.t()) + self.bias_ih) * (
+            torch.mm(hx, self.weight_hh.t()) + self.bias_hh
+        )
+
+        return hidden
+
+
 class SecondOrderCell(jit.ScriptModule):
     def __init__(self, input_size, hidden_size):
         super(SecondOrderCell, self).__init__()
@@ -81,7 +113,7 @@ class SecondOrderCell(jit.ScriptModule):
     @jit.script_method
     def forward(self, input: Tensor, state: Tensor):
         hidden = self.three_order(state, input)
-        hy = torch.relu(hidden)
+        hy = hidden
         return hy
 
 
@@ -232,8 +264,8 @@ class TextLightningModule(pl.LightningModule):
             self.rnn = TensorNetworkLayer(MRNNCell, embedding_size, hidden_size)
         elif self.cell == "RNN":
             self.rnn = TensorNetworkLayer(RNNCell, embedding_size, hidden_size)
-        elif self.cell == "TensorRNN":
-            self.rnn = TensorNetworkLayer(TensorRNNCell, embedding_size, hidden_size)
+        elif self.cell == "RACs":
+            self.rnn = TensorNetworkLayer(RACs, embedding_size, hidden_size)
         elif self.cell == "Second":
             self.rnn = TensorNetworkLayer(SecondOrderCell, embedding_size, hidden_size)
         else:

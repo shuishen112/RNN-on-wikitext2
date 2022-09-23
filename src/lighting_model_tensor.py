@@ -88,10 +88,10 @@ class TensorLightningModule(pl.LightningModule):
         self.embedding = nn.Embedding(self.vocab_size, self.rank * self.rank)
         nn.init.uniform_(self.embedding.weight, -0.1, 0.1)
 
-        if cell == "Second":
-            print("cell_name", cell)
-            self.tnn = TensorLayer(SecondOrderCell, self.rank)
-        elif cell == "TinyTNLM":
+        # if cell == "Second":
+        #     print("cell_name", cell)
+        #     self.tnn = TensorLayer(SecondOrderCell, self.rank)
+        if cell == "TinyTNLM":
             print("cell_name", cell)
             self.tnn = TensorLayer(TinyTNLMCell, self.rank)
 

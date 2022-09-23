@@ -76,5 +76,13 @@ parser.add_argument(
     help=" cell name: Second, TinyTNLM, RNN, MRNN, MIRNN,RACs",
 )
 
+parser.add_argument(
+    "--clip",
+    default=None,
+    type=float,
+    help="clip value",
+)
+
+
 args = parser.parse_args()
 print(args)
