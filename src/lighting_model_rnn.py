@@ -113,8 +113,8 @@ class SecondOrderCell(jit.ScriptModule):
     @jit.script_method
     def forward(self, input: Tensor, state: Tensor):
         hidden = self.three_order(state, input)
-        # hy = hidden
-        hy = torch.tanh(hidden)
+        hy = hidden
+        # hy = torch.tanh(hidden)
         return hy
 
 

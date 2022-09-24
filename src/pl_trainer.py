@@ -49,10 +49,10 @@ if __name__ == "__main__":
 
         model = TextLightningModule(
             vocab_size,
-            hidden_size=100,
-            embedding_size=100,
-            dropout=0.25,
-            lr=5e-1,
+            hidden_size=args.embedding_size,
+            embedding_size=args.hidden_size,
+            dropout=args.dropout,
+            lr=args.lr,
             cell=args.cell,
         )
     elif args.cell in ["TinyTNLM"]:
@@ -72,7 +72,7 @@ if __name__ == "__main__":
         "./lightning_logs/", name=f"{args.cell}_{args.data_name}"
     )
     wandb_logger = WandbLogger(
-        project="ICLR-word-lm", name=f"{args.cell}_{args.data_name}"
+        project=args.project_name, name=f"{args.cell}_{args.data_name}"
     )
     # Define your gpu here
 

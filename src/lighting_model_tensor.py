@@ -7,6 +7,7 @@ from torch import optim
 import torch.jit as jit
 from torch import Tensor
 from typing import List
+from torch.nn import Parameter
 
 
 class TensorLayer(jit.ScriptModule):
@@ -59,6 +60,59 @@ class TinyTNLMCell(jit.ScriptModule):
         return hidden.squeeze(1)
 
 
+class TinyTNLMCell2(jit.ScriptModule):
+    """tnlm cell 2
+
+    Args:
+        jit (_type_): _description_
+    """
+
+    def __init__(self, rank):
+        super(TinyTNLMCell2, self).__init__()
+        self.rank = rank
+        self.wih = nn.Linear(self.rank, self.rank)
+        self.activation = nn.Tanh()
+
+    @jit.script_method
+    def forward(self, input: Tensor, state: Tensor):
+
+        batch_size = input.size(0)
+        w1 = self.wih(state)
+        w2 = input.view(batch_size, self.rank, self.rank)
+
+        hidden = self.activation(
+            torch.einsum("bij,bjk->bik", [w1.unsqueeze(1), w2])
+        )  # [batch, 1, rank]
+        # print(hidden)
+        return hidden.squeeze(1)
+
+
+class TinyTNLMCell3(jit.ScriptModule):
+    """tnlm cell 3
+
+    Args:
+        jit (_type_): _description_
+    """
+
+    def __init__(self, rank):
+        super(TinyTNLMCell3, self).__init__()
+        self.rank = rank
+        self.whh = nn.Linear(self.rank * self.rank, self.rank * self.rank)
+        self.activation = nn.Tanh()
+
+    @jit.script_method
+    def forward(self, input: Tensor, state: Tensor):
+
+        batch_size = input.size(0)
+        w1 = state
+        w2 = self.whh(input).view(batch_size, self.rank, self.rank)
+        hidden = self.activation(
+            torch.einsum("bij,bjk->bik", [w1.unsqueeze(1), w2])
+        )  # [batch, 1, rank]
+        # print(hidden)
+        return hidden.squeeze(1)
+
+
 class SecondOrderCell(jit.ScriptModule):
     def __init__(self, rank):
         super(SecondOrderCell, self).__init__()
@@ -93,7 +147,7 @@ class TensorLightningModule(pl.LightningModule):
         #     self.tnn = TensorLayer(SecondOrderCell, self.rank)
         if cell == "TinyTNLM":
             print("cell_name", cell)
-            self.tnn = TensorLayer(TinyTNLMCell, self.rank)
+            self.tnn = TensorLayer(TinyTNLMCell3, self.rank)
 
         self.out_embed = nn.Linear(self.rank, self.rank * self.rank)
         self.out_fc = nn.Linear(self.rank * self.rank, vocab_size)

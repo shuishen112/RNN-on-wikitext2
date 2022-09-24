@@ -82,7 +82,10 @@ parser.add_argument(
     type=float,
     help="clip value",
 )
-
-
+parser.add_argument(
+    "project_name",
+    default="ICLR-word-lm",
+    help="project name",
+)
 args = parser.parse_args()
 print(args)
