@@ -8,7 +8,7 @@ import torch.jit as jit
 from torch import Tensor
 from typing import List
 from torch.nn import Parameter
-
+from lm_config import args
 
 class TensorLayer(jit.ScriptModule):
     """Tensor layer for the tensor network
@@ -147,7 +147,9 @@ class TensorLightningModule(pl.LightningModule):
         #     self.tnn = TensorLayer(SecondOrderCell, self.rank)
         if cell == "TinyTNLM":
             print("cell_name", cell)
-            self.tnn = TensorLayer(TinyTNLMCell3, self.rank)
+            self.tnn = TensorLayer(TinyTNLMCell, self.rank)
+        elif cell == "TinyTNLM2":
+            self.tnn = TensorLayer(TinyTNLMCell2, self.rank)
 
         self.out_embed = nn.Linear(self.rank, self.rank * self.rank)
         self.out_fc = nn.Linear(self.rank * self.rank, vocab_size)
@@ -169,7 +171,10 @@ class TensorLightningModule(pl.LightningModule):
         return output.view(-1, self.vocab_size), hidden
 
     def configure_optimizers(self):
-        return optim.SGD(self.parameters(), lr=self.lr)
+        if args.optim == "adam":
+            return optim.Adam(self.parameters(), lr = self.lr)
+        elif args.optim == "sgd":
+            return optim.SGD(self.parameters(), lr=self.lr)
 
     def training_step(self, batch, batch_idx):
         x, y = batch

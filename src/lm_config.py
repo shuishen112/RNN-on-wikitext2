@@ -72,8 +72,8 @@ parser.add_argument(
 
 parser.add_argument(
     "--cell",
-    default="Second",
-    help=" cell name: Second, TinyTNLM, RNN, MRNN, MIRNN,RACs",
+    default="RNN",
+    help=" cell name: Second, TinyTNLM, RNN, MRNN, MIRNN,RACs, TinyTNLM2",
 )
 
 parser.add_argument(
@@ -83,9 +83,15 @@ parser.add_argument(
     help="clip value",
 )
 parser.add_argument(
-    "project_name",
+    "--project_name",
     default="ICLR-word-lm",
     help="project name",
+)
+
+parser.add_argument(
+    "--optim",
+    default="sgd",
+    help="optim method",
 )
 args = parser.parse_args()
 print(args)

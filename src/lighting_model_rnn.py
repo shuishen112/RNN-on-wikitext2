@@ -8,6 +8,7 @@ from torch.nn import Parameter
 import torch.jit as jit
 from torch import Tensor
 from typing import List
+import wandb
 
 
 class TextDateModule(pl.LightningDataModule):
@@ -221,6 +222,9 @@ class RNNCell(jit.ScriptModule):
             + torch.mm(hx, self.weight_hh.t())
             + self.bias_hh
         )
+        # print("input", torch.mean(torch.mm(input, self.weight_ih.t())))
+        # print("hidden", torch.mean(torch.mm(hx, self.weight_hh.t())))
+
         hy = torch.tanh(hidden)
         return hy
 
