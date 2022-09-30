@@ -1,14 +1,16 @@
-import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
-import torch
-import pytorch_lightning.loggers as pl_loggers
-from pytorch_lightning.loggers import WandbLogger
-from data_prep import Prep
-from data_module import Vocab
 import argparse
 import random
+
 import numpy as np
-from lighting_model_rnn import TextLightningModule, TextDateModule
+import pytorch_lightning as pl
+import pytorch_lightning.loggers as pl_loggers
+import torch
+from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.loggers import WandbLogger
+
+from data_module import Vocab
+from data_prep import Prep
+from lighting_model_rnn import TextDateModule, TextLightningModule
 from lighting_model_tensor import TensorLightningModule
 from lm_config import args
 

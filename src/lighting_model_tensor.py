@@ -1,13 +1,11 @@
+import math
+from typing import List
+
 import pytorch_lightning as pl
 import torch
-import math
-from torch import nn
-from torch import optim
-
 import torch.jit as jit
-from torch import Tensor
-from typing import List
-from torch.nn import Parameter
+from torch import Tensor, nn, optim
+
 from lm_config import args
 
 
@@ -33,7 +31,7 @@ class TensorLayer(jit.ScriptModule):
         return torch.stack(outputs, 1), state
 
 
-class TinyTNLMCell(jit.ScriptModule):
+class TTLMLargeCell(jit.ScriptModule):
     """tnlm cell
 
     Args:
@@ -41,7 +39,7 @@ class TinyTNLMCell(jit.ScriptModule):
     """
 
     def __init__(self, rank):
-        super(TinyTNLMCell, self).__init__()
+        super(TTLMLargeCell, self).__init__()
         self.rank = rank
         self.wih = nn.Linear(self.rank, self.rank)
         self.whh = nn.Linear(self.rank * self.rank, self.rank * self.rank)
@@ -62,7 +60,7 @@ class TinyTNLMCell(jit.ScriptModule):
         return hidden.squeeze(1)
 
 
-class TinyTNLMCell2(jit.ScriptModule):
+class TTLMTinyCell(jit.ScriptModule):
     """tnlm cell 2
 
     Args:
@@ -70,7 +68,7 @@ class TinyTNLMCell2(jit.ScriptModule):
     """
 
     def __init__(self, rank):
-        super(TinyTNLMCell2, self).__init__()
+        super(TTLMTinyCell, self).__init__()
         self.rank = rank
         self.wih = nn.Linear(self.rank, self.rank)
         self.activation = nn.Tanh()
@@ -88,19 +86,6 @@ class TinyTNLMCell2(jit.ScriptModule):
         hidden = torch.einsum("bij,bjk->bik", [w1.unsqueeze(1), w2])
         # print(hidden)
         return hidden.squeeze(1)
-
-
-class SecondOrderCell(jit.ScriptModule):
-    def __init__(self, rank):
-        super(SecondOrderCell, self).__init__()
-        self.rank = rank
-        self.three_order = nn.Bilinear(self.rank, self.rank * self.rank, self.rank)
-
-    @jit.script_method
-    def forward(self, input: Tensor, state: Tensor):
-        hidden = self.three_order(state, input)
-        hy = torch.relu(hidden)
-        return hy
 
 
 class TensorLightningModule(pl.LightningModule):
@@ -124,9 +109,9 @@ class TensorLightningModule(pl.LightningModule):
         #     self.tnn = TensorLayer(SecondOrderCell, self.rank)
         if cell == "TinyTNLM":
             print("cell_name", cell)
-            self.tnn = TensorLayer(TinyTNLMCell, self.rank)
+            self.tnn = TensorLayer(TTLMLargeCell, self.rank)
         elif cell == "TinyTNLM2":
-            self.tnn = TensorLayer(TinyTNLMCell2, self.rank)
+            self.tnn = TensorLayer(TTLMTinyCell, self.rank)
 
         self.out_embed = nn.Linear(self.rank, self.rank * self.rank)
         self.out_fc = nn.Linear(self.rank * self.rank, vocab_size)

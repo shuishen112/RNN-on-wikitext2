@@ -1,13 +1,12 @@
+import math
+from typing import List
+
 import pytorch_lightning as pl
 import torch
-import math
-from torch import nn
-from torch import optim
-
-from torch.nn import Parameter
 import torch.jit as jit
-from torch import Tensor
-from typing import List
+from torch import Tensor, nn, optim
+from torch.nn import Parameter
+
 import wandb
 
 
@@ -229,9 +228,9 @@ class RNNCell(jit.ScriptModule):
         return hy
 
 
-class TensorNetworkLayer(jit.ScriptModule):
+class RNNLayer(jit.ScriptModule):
     def __init__(self, cell, *cell_args):
-        super(TensorNetworkLayer, self).__init__()
+        super(RNNLayer, self).__init__()
         self.cell = cell(*cell_args)
 
     @jit.script_method
@@ -264,15 +263,15 @@ class TextLightningModule(pl.LightningModule):
         # layers
         print("cell name", self.cell)
         if self.cell == "MIRNN":
-            self.rnn = TensorNetworkLayer(MIRNNCell, embedding_size, hidden_size)
+            self.rnn = RNNLayer(MIRNNCell, embedding_size, hidden_size)
         elif self.cell == "MRNN":
-            self.rnn = TensorNetworkLayer(MRNNCell, embedding_size, hidden_size)
+            self.rnn = RNNLayer(MRNNCell, embedding_size, hidden_size)
         elif self.cell == "RNN":
-            self.rnn = TensorNetworkLayer(RNNCell, embedding_size, hidden_size)
+            self.rnn = RNNLayer(RNNCell, embedding_size, hidden_size)
         elif self.cell == "RACs":
-            self.rnn = TensorNetworkLayer(RACs, embedding_size, hidden_size)
+            self.rnn = RNNLayer(RACs, embedding_size, hidden_size)
         elif self.cell == "Second":
-            self.rnn = TensorNetworkLayer(SecondOrderCell, embedding_size, hidden_size)
+            self.rnn = RNNLayer(SecondOrderCell, embedding_size, hidden_size)
         else:
             print("there is no cell")
 

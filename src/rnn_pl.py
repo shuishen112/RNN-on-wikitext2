@@ -1,11 +1,12 @@
-import pytorch_lightning as pl
-import torch
 import math
-from torch import nn
-from torch import optim
+
+import pytorch_lightning as pl
 import pytorch_lightning.loggers as pl_loggers
-from data_prep import Prep
+import torch
+from torch import nn, optim
+
 from data_module import Vocab
+from data_prep import Prep
 
 
 class TextDateModule(pl.LightningDataModule):

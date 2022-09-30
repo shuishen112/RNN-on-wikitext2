@@ -1,7 +1,10 @@
-from nltk.tokenize import word_tokenize, sent_tokenize
 import random
+
+from nltk.tokenize import sent_tokenize, word_tokenize
 from tqdm import tqdm
+
 from lm_config import args
+
 
 class Prep:
     """Preparing tokenization and frequences."""

@@ -1,15 +1,15 @@
-import pytorch_lightning as pl
-import torch
 import math
-from torch import nn
-from torch import optim
-import pytorch_lightning.loggers as pl_loggers
-from data_prep import Prep
-from data_module import Vocab
-import torch.jit as jit
-from torch import Tensor
 from typing import List, Tuple
+
+import pytorch_lightning as pl
+import pytorch_lightning.loggers as pl_loggers
+import torch
+import torch.jit as jit
+from torch import Tensor, nn, optim
 from torch.nn import Parameter
+
+from data_module import Vocab
+from data_prep import Prep
 
 
 class TextDateModule(pl.LightningDataModule):
