@@ -49,8 +49,8 @@ if __name__ == "__main__":
 
         model = TextLightningModule(
             vocab_size,
-            hidden_size=args.embedding_size,
-            embedding_size=args.hidden_size,
+            hidden_size=args.hidden_size,
+            embedding_size=args.embedding_size,
             dropout=args.dropout,
             lr=args.lr,
             cell=args.cell,
@@ -72,7 +72,7 @@ if __name__ == "__main__":
         "./lightning_logs/", name=f"{args.cell}_{args.data_name}"
     )
     wandb_logger = WandbLogger(
-        project=args.project_name, name=f"{args.cell}_{args.data_name}"
+        project=args.project_name, name=f"{args.cell}_{args.data_name}",config = args,
     )
     # Define your gpu here
 

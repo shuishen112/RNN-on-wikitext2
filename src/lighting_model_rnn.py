@@ -113,7 +113,7 @@ class SecondOrderCell(jit.ScriptModule):
 
     @jit.script_method
     def forward(self, input: Tensor, state: Tensor):
-        hidden = self.three_order(state, input)
+        hidden = self.three_order(input, state)
         hy = hidden
         # hy = torch.tanh(hidden)
         return hy
@@ -248,7 +248,7 @@ class TensorNetworkLayer(jit.ScriptModule):
 class TextLightningModule(pl.LightningModule):
     """RNN module"""
 
-    def __init__(self, vocab_size, embedding_size, hidden_size, dropout, lr, cell):
+    def __init__(self, vocab_size, hidden_size, embedding_size, dropout, lr, cell):
         super().__init__()
 
         self.hidden_size = hidden_size  # 200

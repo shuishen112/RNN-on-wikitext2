@@ -10,6 +10,7 @@ from typing import List
 from torch.nn import Parameter
 from lm_config import args
 
+
 class TensorLayer(jit.ScriptModule):
     """Tensor layer for the tensor network
 
@@ -53,9 +54,10 @@ class TinyTNLMCell(jit.ScriptModule):
         w1 = self.wih(state)
         w2 = self.whh(input).view(batch_size, self.rank, self.rank)
         # w2 = unit.view(batch_size, self.rank, self.rank)
-        hidden = self.activation(
-            torch.einsum("bij,bjk->bik", [w1.unsqueeze(1), w2])
-        )  # [batch, 1, rank]
+        # hidden = self.activation(
+        #     torch.einsum("bij,bjk->bik", [w1.unsqueeze(1), w2])
+        # )  # [batch, 1, rank]
+        hidden = torch.einsum("bij,bjk->bik", [w1.unsqueeze(1), w2])
         # print(hidden)
         return hidden.squeeze(1)
 
@@ -80,35 +82,10 @@ class TinyTNLMCell2(jit.ScriptModule):
         w1 = self.wih(state)
         w2 = input.view(batch_size, self.rank, self.rank)
 
-        hidden = self.activation(
-            torch.einsum("bij,bjk->bik", [w1.unsqueeze(1), w2])
-        )  # [batch, 1, rank]
-        # print(hidden)
-        return hidden.squeeze(1)
-
-
-class TinyTNLMCell3(jit.ScriptModule):
-    """tnlm cell 3
-
-    Args:
-        jit (_type_): _description_
-    """
-
-    def __init__(self, rank):
-        super(TinyTNLMCell3, self).__init__()
-        self.rank = rank
-        self.whh = nn.Linear(self.rank * self.rank, self.rank * self.rank)
-        self.activation = nn.Tanh()
-
-    @jit.script_method
-    def forward(self, input: Tensor, state: Tensor):
-
-        batch_size = input.size(0)
-        w1 = state
-        w2 = self.whh(input).view(batch_size, self.rank, self.rank)
-        hidden = self.activation(
-            torch.einsum("bij,bjk->bik", [w1.unsqueeze(1), w2])
-        )  # [batch, 1, rank]
+        # hidden = self.activation(
+        #     torch.einsum("bij,bjk->bik", [w1.unsqueeze(1), w2])
+        # )  # [batch, 1, rank]
+        hidden = torch.einsum("bij,bjk->bik", [w1.unsqueeze(1), w2])
         # print(hidden)
         return hidden.squeeze(1)
 
@@ -172,7 +149,7 @@ class TensorLightningModule(pl.LightningModule):
 
     def configure_optimizers(self):
         if args.optim == "adam":
-            return optim.Adam(self.parameters(), lr = self.lr)
+            return optim.Adam(self.parameters(), lr=self.lr)
         elif args.optim == "sgd":
             return optim.SGD(self.parameters(), lr=self.lr)
 

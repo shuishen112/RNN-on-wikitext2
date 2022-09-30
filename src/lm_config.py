@@ -36,11 +36,11 @@ parser.add_argument(
     help="rank of tensor train",
 )
 
-parser.add_argument(
-    "--activation",
-    default="nn.Tanh",
-    help="the activation in TNLM[nn.LeakyReLU,nn.RReLU,nn.ReLU,nn.ReLU6,nn.SELU,nn.GELU]",
-)
+# parser.add_argument(
+#     "--activation",
+#     default="nn.Tanh",
+#     help="the activation in TNLM[nn.LeakyReLU,nn.RReLU,nn.ReLU,nn.ReLU6,nn.SELU,nn.GELU]",
+# )
 
 
 parser.add_argument(
@@ -84,7 +84,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--project_name",
-    default="ICLR-word-lm",
+    default="ICLR-word-lm-rank-analysis",
     help="project name",
 )
 
