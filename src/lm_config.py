@@ -31,7 +31,7 @@ parser.add_argument(
 
 parser.add_argument(
     "--rank",
-    default=10,
+    default=20,
     type=int,
     help="rank of tensor train",
 )
@@ -72,8 +72,8 @@ parser.add_argument(
 
 parser.add_argument(
     "--cell",
-    default="RNN",
-    help=" cell name: Second, TinyTNLM, RNN, MRNN, MIRNN,RACs, TinyTNLM2",
+    default="TTLM",
+    help=" cell name: Second,TTLM, TinyTNLM, RNN, MRNN, MIRNN,RACs, TinyTNLM2",
 )
 
 parser.add_argument(

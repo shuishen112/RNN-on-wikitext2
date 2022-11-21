@@ -12,6 +12,7 @@ from data_module import Vocab
 from data_prep import Prep
 from lighting_model_rnn import TextDateModule, TextLightningModule
 from lighting_model_tensor import TensorLightningModule
+from lighting_model_ttlmraw import TTLMRAWLightningModule
 from lm_config import args
 
 
@@ -65,6 +66,14 @@ if __name__ == "__main__":
             lr=args.lr,
             cell=args.cell,
         )
+    elif args.cell in ["TTLM"]:
+        model = TTLMRAWLightningModule(
+            vocab_size=vocab_size,
+            rank=args.rank,
+            dropout=args.dropout,
+            lr=args.lr,
+            cell=args.cell,
+        )
 
     # model = model.load_from_checkpoint(
     #     "lightning_logs/tnlm/version_1/checkpoints/epoch=49-step=78950.ckpt"
@@ -73,9 +82,11 @@ if __name__ == "__main__":
     tb_logger = pl_loggers.TensorBoardLogger(
         "./lightning_logs/", name=f"{args.cell}_{args.data_name}"
     )
-    wandb_logger = WandbLogger(
-        project=args.project_name, name=f"{args.cell}_{args.data_name}",config = args,
-    )
+    # wandb_logger = WandbLogger(
+    #     project=args.project_name,
+    #     name=f"{args.cell}_{args.data_name}",
+    #     config=args,
+    # )
     # Define your gpu here
 
     checkpoint_callback = ModelCheckpoint(
@@ -86,7 +97,7 @@ if __name__ == "__main__":
         mode="min",
     )
     trainer = pl.Trainer(
-        logger=wandb_logger,
+        logger=None,
         max_epochs=50,
         gpus=1,
         # limit_train_batches=10,

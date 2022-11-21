@@ -31,63 +31,32 @@ class TensorLayer(jit.ScriptModule):
         return torch.stack(outputs, 1), state
 
 
-class TTLMLargeCell(jit.ScriptModule):
-    """tnlm cell
-
+class TTLMCell(jit.ScriptModule):
+    """ttlm cell
     Args:
         jit (_type_): _description_
     """
 
     def __init__(self, rank):
-        super(TTLMLargeCell, self).__init__()
+        super(TTLMCell, self).__init__()
         self.rank = rank
-        self.wih = nn.Linear(self.rank, self.rank)
-        self.whh = nn.Linear(self.rank * self.rank, self.rank * self.rank)
         self.activation = nn.Tanh()
 
     @jit.script_method
     def forward(self, input: Tensor, state: Tensor):
 
         batch_size = input.size(0)
-        w1 = self.wih(state)
-        w2 = self.whh(input).view(batch_size, self.rank, self.rank)
-        # w2 = unit.view(batch_size, self.rank, self.rank)
+
+        w2 = input.view(batch_size, self.rank, self.rank)
         # hidden = self.activation(
         #     torch.einsum("bij,bjk->bik", [w1.unsqueeze(1), w2])
         # )  # [batch, 1, rank]
-        hidden = torch.einsum("bij,bjk->bik", [w1.unsqueeze(1), w2])
+        hidden = torch.einsum("bij,bjk->bik", [state.unsqueeze(1), w2])
         # print(hidden)
         return hidden.squeeze(1)
 
 
-class TTLMTinyCell(jit.ScriptModule):
-    """tnlm cell 2
-
-    Args:
-        jit (_type_): _description_
-    """
-
-    def __init__(self, rank):
-        super(TTLMTinyCell, self).__init__()
-        self.rank = rank
-        self.wih = nn.Linear(self.rank, self.rank)
-        self.activation = nn.Tanh()
-
-    @jit.script_method
-    def forward(self, input: Tensor, state: Tensor):
-
-        batch_size = input.size(0)
-        w1 = self.wih(state)
-        w2 = input.view(batch_size, self.rank, self.rank)
-
-        # hidden = self.activation(
-        #     torch.einsum("bij,bjk->bik", [w1.unsqueeze(1), w2])
-        # )  # [batch, 1, rank]
-        hidden = torch.einsum("bij,bjk->bik", [w1.unsqueeze(1), w2])
-        return hidden.squeeze(1)
-
-
-class TensorLightningModule(pl.LightningModule):
+class TTLMRAWLightningModule(pl.LightningModule):
     """Tensor module"""
 
     def __init__(self, vocab_size, rank, dropout, lr, cell):
@@ -99,21 +68,19 @@ class TensorLightningModule(pl.LightningModule):
         self.dropout = dropout
         self.lr = lr
         self.cell = cell
+
+        # There are two embedding
         # embedding
-        self.embedding = nn.Embedding(self.vocab_size, self.rank * self.rank)
-        nn.init.uniform_(self.embedding.weight, -0.1, 0.1)
+        self.G = nn.Embedding(self.vocab_size, self.rank * self.rank)
+        self.Gt = nn.Linear(self.rank, self.vocab_size)
 
-        if cell == "TinyTNLM":
+        nn.init.uniform_(self.G.weight, -0.1, 0.1)
+
+        if cell == "TTLM":
             print("cell_name", cell)
-            self.tnn = TensorLayer(TTLMLargeCell, self.rank)
+            self.tnn = TensorLayer(TTLMCell, self.rank)
         elif cell == "TinyTNLM2":
-            self.tnn = TensorLayer(TTLMTinyCell, self.rank)
-
-        self.out_embed = nn.Linear(self.rank, self.rank * self.rank)
-        self.out_fc = nn.Linear(self.rank * self.rank, vocab_size)
-        # self.out_fc = nn.Linear(self.rank, vocab_size)
-
-        self.out_fc.weight = self.embedding.weight
+            self.tnn = TensorLayer(TTLMCell, self.rank)
 
         # loss funciton
         self.loss = nn.CrossEntropyLoss()
@@ -122,10 +89,9 @@ class TensorLightningModule(pl.LightningModule):
         self.save_hyperparameters()
 
     def forward(self, data, hidden):
-        embedding = self.dropout(self.embedding(data))
+        embedding = self.dropout(self.G(data))
         output, hidden = self.tnn(embedding, hidden)
-        output_embed = self.out_embed(output)
-        output = self.out_fc(output_embed)
+        output= self.Gt(output)
         return output.view(-1, self.vocab_size), hidden
 
     def configure_optimizers(self):
